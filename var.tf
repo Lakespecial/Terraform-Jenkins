@@ -5,11 +5,7 @@ variable "aws_region" {
 
 variable "instance_type" {
   description = "instance type for ec2"
-  default     =  "t2.micro"
-}
-variable "security_group" {
-  description = "Name of security group"
-  default     = "my-jenkins-security-group"
+  default     = "t2.micro"
 }
 
 variable "tag_name" {
@@ -17,7 +13,7 @@ variable "tag_name" {
   default     = "my-ec2-instance"
 }
 
-variable "ami_id" {
+variable "ami" {
   description = "AMI for Ubuntu Ec2 instance"
   default     = "ami-09a56048b08f94cdf"
 }

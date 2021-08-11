@@ -2,10 +2,31 @@ provider "aws" {
   region = var.aws_region
 }
 
-#Create security group with firewall rules
-resource "aws_security_group" "my_security_group" {
-  name        = var.security_group
-  description = "security group for Ec2 instance"
+resource "aws_vpc" "myvpc" {
+  cidr_block = "10.0.0.0/16"
+}
+
+resource "aws_subnet" "mysubnet" {
+  vpc_id                  = aws_vpc.myvpc.id
+  cidr_block              = "10.0.0.0/24"
+  map_public_ip_on_launch = true
+  availability_zone       = "eu-west-2a"
+}
+
+  resource "aws_instance" "web" {
+    ami                    = var.ami
+    instance_type          = var.instance_type
+    key_name               = "myk1"
+    vpc_security_group_ids = ["${aws_security_group.websg.id}"]
+    subnet_id              = aws_subnet.mysubnet.id
+
+  }
+
+
+resource "aws_security_group" "websg" {
+  name        = "terraform_example"
+  description = "Used in the terraform"
+  vpc_id      = aws_vpc.myvpc.id
 
   ingress {
     from_port   = 8080
@@ -14,14 +35,14 @@ resource "aws_security_group" "my_security_group" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
- ingress {
+  ingress {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
- # outbound from jenkis server
+  # outbound from jenkis server
   egress {
     from_port   = 0
     to_port     = 65535
@@ -29,26 +50,4 @@ resource "aws_security_group" "my_security_group" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-  tags= {
-    Name = var.security_group
-  }
-}
-
-# Create AWS ec2 instance
-resource "aws_instance" "myFirstInstance" {
-  ami           = var.ami_id
-  instance_type = var.instance_type
-  security_groups= [var.security_group]
-  tags= {
-    Name = var.tag_name
-  }
-}
-
-# Create Elastic IP address
-resource "aws_eip" "myFirstInstance" {
-  vpc      = true
-  instance = aws_instance.myFirstInstance.id
-tags= {
-    Name = "my_elastic_ip"
-  }
 }
